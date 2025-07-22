@@ -26,25 +26,20 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        fullname = request.form['fullname']
-        address = request.form['address']
-        pincode = request.form['pincode']
-
+        form_data = request.form.to_dict()
 
         # Check if the username already exists
-        if User.query.filter_by(username=username).first():
+        if User.query.filter_by(username=form_data['username']).first():
             flash('Username already exists', 'error')
             return redirect(url_for('register'))
 
         # Create new user with hashed password
         new_user = User(
-            username=username,
-            password_hash=generate_password_hash(password),
-            fullname=fullname,
-            address=address,
-            pincode=pincode,
+            username=form_data['username'],
+            password_hash=generate_password_hash(form_data['password']),
+            fullname=form_data['fullname'],
+            address=form_data['address'],
+            pincode=form_data['pincode'],
             is_admin=False
         )
         db.session.add(new_user)
@@ -60,11 +55,14 @@ def register():
 @login_required
 def edit_profile():
     if request.method == 'POST':
-        current_user.username = request.form['username']
-        current_user.password_hash = generate_password_hash(request.form['password'])
-        current_user.fullname = request.form['fullname']
-        current_user.address = request.form['address']
-        current_user.pincode = request.form['pincode']
+        form_data = request.form.to_dict()
+        
+        current_user.username = form_data['username']
+        if form_data['password']:
+            current_user.password_hash = generate_password_hash(form_data['password'])
+        current_user.fullname = form_data['fullname']
+        current_user.address = form_data['address']
+        current_user.pincode = form_data['pincode']
         db.session.commit()
         flash('Profile updated successfully!', 'success')
         return redirect(url_for('user_dashboard'))

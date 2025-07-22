@@ -1,0 +1,62 @@
+{% extends "layout.html" %}
+
+{% block title %}Registered Users | Vehicle Parking App{% endblock %}
+
+{% block header %}
+    {% include "admin/navbar.html" with context %}
+{% endblock header %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">Search</h2>
+    <form method="POST" action="{{ url_for('admin_search') }}">
+        <div class="input-group mb-3">
+            <select class="form-select" name="search_type" required>
+                <option value="user">User by Username</option>
+                <option value="parking_location">Parking Spot by Location</option>
+            </select>
+            <input type="text" class="form-control" name="search_query" placeholder="Enter search term..." required>
+            <button class="btn btn-primary" type="submit">Search</button>
+        </div>
+    </form>
+
+    {% if parking_lots or users %}
+        <div class="mt-4">
+            <h3 class="mb-4">Search Results for "{{ search_query }}"</h3>
+            {% if parking_lots %}
+                <h4>Parking Lots</h4>
+                <ul class="list-group mb-4">
+                    {% for lot in parking_lots %}
+                        <li class="list-group-item">
+                            <strong>{{ lot.prime_location_name }}</strong> - {{ lot.address }} ({{ lot.pin_code }})
+                            <span class="badge bg-success">Price: ₹{{ lot.price }}/hr</span>
+                            <span class="badge bg-info">Spots: {{ lot.maximum_number_of_spots }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            {% if users %}
+                <h4>Users</h4>
+                <table class="table table-bordered mb-0">
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Full Name</th>
+                        <th>Address</th>
+                        <th>Pincode</th>
+                    </tr>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.fullname }}</td>
+                        <td>{{ user.address }}</td>
+                        <td>{{ user.pincode }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

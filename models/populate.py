@@ -1,4 +1,4 @@
-from models import db, ParkingLot, ParkingSpot, User, ReserveParkingSpot
+from models import db, ParkingLot, ParkingSpot, User, Ticket
 from werkzeug.security import generate_password_hash
 from datetime import datetime, timedelta
 
@@ -54,14 +54,16 @@ def populate_db():
     user = User.query.filter_by(username='john_doe').first()
     parking_lot = ParkingLot.query.filter_by(prime_location_name='Downtown Parking').first()
     spot = ParkingSpot.query.filter_by(lot_id=parking_lot.id).first()
-    existing_reservation = ReserveParkingSpot.query.filter_by(user_id=user.id, spot_id=spot.id).first()
-    if not existing_reservation:
-        reservation = ReserveParkingSpot(
+    existing_ticket = Ticket.query.filter_by(user_id=user.id, spot_id=spot.id).first()
+    if not existing_ticket:
+        ticket = Ticket(
             user_id=user.id,
             spot_id=spot.id,
-            parking_timestamp=datetime.now(),
-            leaving_timestamp=datetime.now() + timedelta(hours=2),
+            vehicle_number='ABC123',
+            active=False,
+            parking_timestamp=datetime.now() - timedelta(hours=1),
+            leaving_timestamp=datetime.now(),
             parking_cost_per_unit_time=50.00
         )
-        db.session.add(reservation)
+        db.session.add(ticket)
         db.session.commit()

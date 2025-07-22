@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+
+{% block title %}User Dashboard | Vehicle Parking App{% endblock %}
+
+{% block header %}
+{% include "user/navbar.html" with context %}
+{% endblock header%}
+
+{% block content %}
+
+    <!-- Parking Records Table -->
+    <div class="container mt-4">
+        <h4>Your Parking Records</h4>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Location</th>
+                    <th>Vehicle Number</th>
+                    <th>Parking Time</th>
+                    <th>Leaving Time</th>
+                    <th>Cost/Hour</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr>
+                    <td>{{ record.id }}</td>
+                    <td>{{ record.spot.lot.prime_location_name }}</td>
+                    <td>{{ record.vehicle_number }}</td>
+                    <td>{{ record.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ record.leaving_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>₹{{ record.parking_cost_per_unit_time }}</td>
+                    <td>
+                        <div class="d-flex justify-content-center">
+                            <a href="{{ url_for('book_parking', record_id=record.id) }}" class="btn btn-primary mx-2">Book Parking</a>
+                            <a href="{{ url_for('release_parking', record_id=record.id) }}" class="btn btn-danger mx-2">Release Parking</a>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center">No parking records found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

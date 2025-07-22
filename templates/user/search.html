@@ -1,0 +1,60 @@
+<!--
+    Template: search.html
+    Description:
+        This template renders the search page for registered users in the Vehicle Parking App.
+        It extends the base layout and includes a navigation bar for users.
+
+    Features:
+        - Displays a search form allowing users to enter a search term.
+        - On form submission (POST), the search query is sent to the 'user_search' route.
+        - If search results (parking_lots) are available:
+            - Shows the search query used.
+            - Lists matching parking lots with details:
+                - Prime location name
+                - Address and pin code
+                - Price per hour
+                - Maximum number of spots available
+
+    Blocks:
+        - title: Sets the page title.
+        - header: Includes the user navigation bar.
+        - content: Contains the search form and displays search results if available.
+
+    Usage:
+        - Used for searching and displaying parking lot information to registered users.
+-->
+{% extends "layout.html" %}
+
+{% block title %}Registered Users | Vehicle Parking App{% endblock %}
+
+{% block header %}
+    {% include "user/navbar.html" with context %}
+{% endblock header %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">Search</h2>
+    <form method="POST" action="{{ url_for('user_search') }}">
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" name="search_query" placeholder="Enter search term..." required>
+            <button class="btn btn-primary" type="submit">Search</button>
+        </div>
+    </form>
+
+    {% if parking_lots %}
+        <div class="mt-4">
+            <h3 class="mb-4">Search Results for "{{ search_query }}"</h3>
+                <h4>Parking Lots</h4>
+                <ul class="list-group mb-4">
+                    {% for lot in parking_lots %}
+                        <li class="list-group-item">
+                            <strong>{{ lot.prime_location_name }}</strong> - {{ lot.address }} ({{ lot.pin_code }})
+                            <span class="badge bg-success">Price: ₹{{ lot.price }}/hr</span>
+                            <span class="badge bg-info">Spots: {{ lot.maximum_number_of_spots }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

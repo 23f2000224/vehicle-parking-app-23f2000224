@@ -11,7 +11,6 @@ class ParkingLot(db.Model):
     address = db.Column(db.Text, nullable=False)
     pin_code = db.Column(db.String(10), nullable=False)
     maximum_number_of_spots = db.Column(db.Integer, nullable=False)
-    # Add additional fields as needed
 
     spots = db.relationship('ParkingSpot', backref='lot', lazy=True)
 
@@ -23,9 +22,8 @@ class ParkingSpot(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     lot_id = db.Column(db.Integer, db.ForeignKey('parking_lot.id'), nullable=False)
     status = db.Column(db.String(1), nullable=False, default='A')  # 'O' or 'A'
-    # Add additional fields as needed
 
-    reservations = db.relationship('ReserveParkingSpot', backref='spot', lazy=True)
+    tickets = db.relationship('Ticket', backref='spot', lazy=True)
 
     def __repr__(self):
         return f"<Spot {self.id} in {self.lot.prime_location_name} - {self.status}>"
@@ -39,20 +37,24 @@ class User(db.Model, UserMixin):
     address = db.Column(db.Text, nullable=False)
     pincode = db.Column(db.String(10), nullable=False)
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
-    parking_reservations = db.relationship('ReserveParkingSpot', backref='user', lazy=True)
+    parking_tickets = db.relationship('Ticket', backref='user', lazy=True)
     password_hash = db.Column(db.String(128), nullable=False)
 
     def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+        return check_password_hash(self.password_hash, password)    
+    
+    def __repr__(self):
+        return f"<User {self.username} ({self.fullname})>"
 
-class ReserveParkingSpot(db.Model):
+class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    active = db.Column(db.Boolean, default=True, nullable=False)
     spot_id = db.Column(db.Integer, db.ForeignKey('parking_spot.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    vehicle_number = db.Column(db.String(20), nullable=False)
     parking_timestamp = db.Column(db.DateTime, nullable=False)
-    leaving_timestamp = db.Column(db.DateTime, nullable=False)
+    leaving_timestamp = db.Column(db.DateTime)
     parking_cost_per_unit_time = db.Column(db.Numeric(8, 2), nullable=False)
-    # Add additional fields as needed
 
     def __repr__(self):
-        return f"<Reservation {self.id} by User {self.user_id} for Spot {self.spot_id}>"
+        return f"<Ticket {self.id} by User {self.user_id} for Spot {self.spot_id}>"

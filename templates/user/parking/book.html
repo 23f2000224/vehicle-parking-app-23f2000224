@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+
+{% block title %}Book Parking Spot | Vehicle Parking App{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 500px;">
+    <div class="card shadow">
+        <div class="card-body">
+            <h3 class="card-title text-center mb-4">Book Parking Spot</h3>
+            <form method="post" autocomplete="off">
+                <div class="mb-3">
+                    <label for="spot_id" class="form-label">Spot ID</label>
+                    <input type="number" class="form-control" id="spot_id" name="spot_id" required>
+                </div>
+                <div class="mb-3">
+                    <label for="vehicle_number" class="form-label">Vehicle Number</label>
+                    <input type="text" class="form-control" id="vehicle_number" name="vehicle_number" required>
+                </div>
+                <div class="mb-3">
+                    <label for="parking_time" class="form-label">Parking Time</label>
+                    <input type="datetime-local" class="form-control" id="parking_time" name="parking_time" required>
+                </div>
+                <div class="mb-3">
+                    <label for="releasing_time" class="form-label">Releasing Time</label>
+                    <input type="datetime-local" class="form-control" id="releasing_time" name="releasing_time" required>
+                </div>
+                <div class="mb-3">
+                    <label for="total_cost" class="form-label">Total Cost</label>
+                    <input type="number" step="0.01" class="form-control" id="total_cost" name="total_cost" required>
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-success">Book Spot</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
