@@ -9,9 +9,32 @@
 
 {% block content %}
     
-    <div class="container mt-4 text-center">
-        <h2>Summary for {{ user }}</h2>
+    <div class="container mt-4">
+        <h2>Your Parking Summary</h2>
+        
+        <div class="row mt-4">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Parking Cost History</h5>
+                        <img src="data:image/png;base64,{{ plot_url }}" alt="Parking Cost History" class="img-fluid">
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Statistics</h5>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">Total Parkings: {{ stats.total_parkings }}</li>
+                            <li class="list-group-item">Total Spent: {{ stats.total_spent|replace('$', '₹') }}</li>
+                            <li class="list-group-item">Average Cost: {{ stats.avg_cost|replace('$', '₹') }}</li>
+                            <li class="list-group-item">Most Used Lot: {{ stats.most_used_lot }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    
     
 {% endblock %}

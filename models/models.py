@@ -12,10 +12,46 @@ class ParkingLot(db.Model):
     pin_code = db.Column(db.String(10), nullable=False)
     maximum_number_of_spots = db.Column(db.Integer, nullable=False)
 
-    spots = db.relationship('ParkingSpot', backref='lot', lazy=True)
+    spots = db.relationship('ParkingSpot', backref='lot', lazy=True, 
+                          cascade='all, delete-orphan')
 
     def __repr__(self):
         return f"<ParkingLot {self.prime_location_name} ({self.address})>"
+
+    def needs_spots(self):
+        """Check if parking lot needs spots to be created"""
+        return len(self.spots) < self.maximum_number_of_spots
+
+    def remaining_spots_to_create(self):
+        """Get number of spots that need to be created"""
+        return self.maximum_number_of_spots - len(self.spots)
+
+    def get_occupied_spots_count(self):
+        """Get count of spots that are currently occupied"""
+        return ParkingSpot.query.filter_by(lot_id=self.id, status='O').count()
+
+    def can_reduce_spots(self, new_max_spots):
+        """Check if spots can be reduced to new maximum"""
+        occupied_spots = self.get_occupied_spots_count()
+        return occupied_spots <= new_max_spots
+
+    def safely_reduce_spots(self, new_max_spots):
+        """Try to reduce spots to new maximum, return success status and message"""
+        if not self.can_reduce_spots(new_max_spots):
+            occupied = self.get_occupied_spots_count()
+            return False, f"Cannot reduce spots below occupied count ({occupied} spots in use)"
+            
+        # Delete only available spots
+        spots_to_delete = (ParkingSpot.query
+                         .filter_by(lot_id=self.id, status='A')
+                         .order_by(ParkingSpot.id.desc())
+                         .limit(len(self.spots) - new_max_spots)
+                         .all())
+        
+        for spot in spots_to_delete:
+            db.session.delete(spot)
+            
+        return True, f"Successfully reduced to {new_max_spots} spots"
 
 
 class ParkingSpot(db.Model):
@@ -23,7 +59,15 @@ class ParkingSpot(db.Model):
     lot_id = db.Column(db.Integer, db.ForeignKey('parking_lot.id'), nullable=False)
     status = db.Column(db.String(1), nullable=False, default='A')  # 'O' or 'A'
 
-    tickets = db.relationship('Ticket', backref='spot', lazy=True)
+    tickets = db.relationship('Ticket', backref='spot', lazy=True,
+                            cascade='all, delete-orphan')
+
+    def has_active_tickets(self):
+        return any(ticket.active for ticket in self.tickets)
+
+    def get_active_ticket(self):
+        """Get the currently active ticket for this spot, if any"""
+        return Ticket.query.filter_by(spot_id=self.id, active=True).first()
 
     def __repr__(self):
         return f"<Spot {self.id} in {self.lot.prime_location_name} - {self.status}>"
@@ -54,6 +98,8 @@ class Ticket(db.Model):
     vehicle_number = db.Column(db.String(20), nullable=False)
     parking_timestamp = db.Column(db.DateTime, nullable=False)
     leaving_timestamp = db.Column(db.DateTime)
+    duration = db.Column(db.Float)  # in hours
+    total_cost = db.Column(db.Numeric(10, 2))
     parking_cost_per_unit_time = db.Column(db.Numeric(8, 2), nullable=False)
 
     def __repr__(self):

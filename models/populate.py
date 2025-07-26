@@ -8,7 +8,7 @@ def populate_db():
     if not parking_lot:
         parking_lot = ParkingLot(
             prime_location_name='Downtown Parking',
-            price=25.00,
+            price=150.00,  # Changed to rupees
             address='123 Main St',
             pin_code='123456',
             maximum_number_of_spots=10
@@ -63,7 +63,7 @@ def populate_db():
             active=False,
             parking_timestamp=datetime.now() - timedelta(hours=1),
             leaving_timestamp=datetime.now(),
-            parking_cost_per_unit_time=50.00
+            parking_cost_per_unit_time=150.00  # Changed to rupees
         )
         db.session.add(ticket)
         db.session.commit()

@@ -24,26 +24,43 @@
                 </tr>
             </thead>
             <tbody>
-                {% for record in records %}
-                <tr>
-                    <td>{{ record.id }}</td>
-                    <td>{{ record.spot.lot.prime_location_name }}</td>
-                    <td>{{ record.vehicle_number }}</td>
-                    <td>{{ record.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
-                    <td>{{ record.leaving_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
-                    <td>₹{{ record.parking_cost_per_unit_time }}</td>
-                    <td>
-                        <div class="d-flex justify-content-center">
-                            <a href="{{ url_for('book_parking', record_id=record.id) }}" class="btn btn-primary mx-2">Book Parking</a>
-                            <a href="{{ url_for('release_parking', record_id=record.id) }}" class="btn btn-danger mx-2">Release Parking</a>
-                        </div>
-                    </td>
-                </tr>
+                {% if tickets %}
+                    {% for ticket in tickets %}
+                    <tr>
+                        <td>{{ ticket.id }}</td>
+                        <td>{{ ticket.spot.lot.prime_location_name }}</td>
+                        <td>{{ ticket.vehicle_number }}</td>
+                        <td>{{ ticket.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            {% if ticket.leaving_timestamp %}
+                                {{ ticket.leaving_timestamp.strftime('%Y-%m-%d %H:%M') }}
+                            {% else %}
+                                Active
+                            {% endif %}
+                        </td>
+                        <td>₹{{ ticket.parking_cost_per_unit_time }}</td>
+                        <td>
+                            <div class="d-flex justify-content-center">
+                                {% if ticket.leaving_timestamp %}
+                                    <span class="badge bg-secondary">Released</span>
+                                {% else %}
+                                    <span class="badge bg-success">Active</span>
+                                {% endif %}
+                                {% if not ticket.leaving_timestamp %}
+                                    <a href="{{ url_for('view_ticket', ticket_id=ticket.id) }}" class="btn btn-info mx-2">View Details</a>
+                                    <form action="{{ url_for('release_parking', record_id=ticket.id) }}" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-danger mx-2">Release Parking</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
                 {% else %}
-                <tr>
-                    <td colspan="7" class="text-center">No parking records found.</td>
-                </tr>
-                {% endfor %}
+                    <tr>
+                        <td colspan="7" class="text-center">No parking records found.</td>
+                    </tr>
+                {% endif %}
             </tbody>
         </table>
     </div>
