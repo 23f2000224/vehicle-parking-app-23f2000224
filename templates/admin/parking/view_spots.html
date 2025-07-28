@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+
+{% block title %}Parking Spots | Vehicle Parking App{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Parking Spots in {{ lot.prime_location_name }}</h2>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+    
+    <div class="spots-container" style="max-height: 75vh; overflow-y: auto;">
+        <div class="row">
+            {% for spot in spots %}
+            <div class="col-md-4 col-lg-3 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Spot ID: {{ spot.id }}</h5>
+                        <p class="card-text">
+                            Status: 
+                            <span class="badge {% if spot.status == 'O' %}bg-danger{% else %}bg-success{% endif %}">
+                                {{ 'Occupied' if spot.status == 'O' else 'Available' }}
+                            </span>
+                        </p>
+                        {% if spot.status == 'O' %}
+                            {% set active_ticket = spot.get_active_ticket() %}
+                            {% if active_ticket %}
+                            <a href="{{ url_for('view_spot_details', lot_id=lot.id, spot_id=spot.id) }}" 
+                               class="btn btn-info btn-sm">View More Details</a>
+                            {% endif %}
+                        {% endif %}
+                        {% if spot.status == 'A' %}
+                            <form action="{{ url_for('delete_parking_spot', lot_id=lot.id, spot_id=spot.id) }}" 
+                                  method="POST" 
+                                  onsubmit="return confirm('Are you sure you want to delete this parking spot?');"
+                                  class="mt-2">
+                                <button type="submit" class="btn btn-danger btn-sm">Delete Spot</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

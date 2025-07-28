@@ -5,7 +5,7 @@ from models.models import ParkingLot, ParkingSpot, User, Ticket
 from werkzeug.security import generate_password_hash
 from datetime import datetime
 import matplotlib
-matplotlib.use('Agg')  # Set backend before importing pyplot
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import io
 import base64

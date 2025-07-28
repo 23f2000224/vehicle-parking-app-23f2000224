@@ -19,29 +19,23 @@ class ParkingLot(db.Model):
         return f"<ParkingLot {self.prime_location_name} ({self.address})>"
 
     def needs_spots(self):
-        """Check if parking lot needs spots to be created"""
         return len(self.spots) < self.maximum_number_of_spots
 
     def remaining_spots_to_create(self):
-        """Get number of spots that need to be created"""
         return self.maximum_number_of_spots - len(self.spots)
 
     def get_occupied_spots_count(self):
-        """Get count of spots that are currently occupied"""
         return ParkingSpot.query.filter_by(lot_id=self.id, status='O').count()
 
     def can_reduce_spots(self, new_max_spots):
-        """Check if spots can be reduced to new maximum"""
         occupied_spots = self.get_occupied_spots_count()
         return occupied_spots <= new_max_spots
 
     def safely_reduce_spots(self, new_max_spots):
-        """Try to reduce spots to new maximum, return success status and message"""
         if not self.can_reduce_spots(new_max_spots):
             occupied = self.get_occupied_spots_count()
             return False, f"Cannot reduce spots below occupied count ({occupied} spots in use)"
             
-        # Delete only available spots
         spots_to_delete = (ParkingSpot.query
                          .filter_by(lot_id=self.id, status='A')
                          .order_by(ParkingSpot.id.desc())
@@ -57,7 +51,7 @@ class ParkingLot(db.Model):
 class ParkingSpot(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     lot_id = db.Column(db.Integer, db.ForeignKey('parking_lot.id'), nullable=False)
-    status = db.Column(db.String(1), nullable=False, default='A')  # 'O' or 'A'
+    status = db.Column(db.String(1), nullable=False, default='A')
 
     tickets = db.relationship('Ticket', backref='spot', lazy=True,
                             cascade='all, delete-orphan')
@@ -66,7 +60,6 @@ class ParkingSpot(db.Model):
         return any(ticket.active for ticket in self.tickets)
 
     def get_active_ticket(self):
-        """Get the currently active ticket for this spot, if any"""
         return Ticket.query.filter_by(spot_id=self.id, active=True).first()
 
     def __repr__(self):
@@ -75,7 +68,6 @@ class ParkingSpot(db.Model):
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
-    # Add additional fields as needed (username, email, etc.)
     username = db.Column(db.String(80), unique=True, nullable=False)
     fullname = db.Column(db.String(255), nullable=False)
     address = db.Column(db.Text, nullable=False)
@@ -98,7 +90,7 @@ class Ticket(db.Model):
     vehicle_number = db.Column(db.String(20), nullable=False)
     parking_timestamp = db.Column(db.DateTime, nullable=False)
     leaving_timestamp = db.Column(db.DateTime)
-    duration = db.Column(db.Float)  # in hours
+    duration = db.Column(db.Float)
     total_cost = db.Column(db.Numeric(10, 2))
     parking_cost_per_unit_time = db.Column(db.Numeric(8, 2), nullable=False)
 

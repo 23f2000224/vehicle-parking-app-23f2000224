@@ -1,28 +1,3 @@
-<!--
-    Template: search.html
-    Description:
-        This template renders the search page for registered users in the Vehicle Parking App.
-        It extends the base layout and includes a navigation bar for users.
-
-    Features:
-        - Displays a search form allowing users to enter a search term.
-        - On form submission (POST), the search query is sent to the 'user_search' route.
-        - If search results (parking_lots) are available:
-            - Shows the search query used.
-            - Lists matching parking lots with details:
-                - Prime location name
-                - Address and pin code
-                - Price per hour
-                - Maximum number of spots available
-
-    Blocks:
-        - title: Sets the page title.
-        - header: Includes the user navigation bar.
-        - content: Contains the search form and displays search results if available.
-
-    Usage:
-        - Used for searching and displaying parking lot information to registered users.
--->
 {% extends "layout.html" %}
 
 {% block title %}Registered Users | Vehicle Parking App{% endblock %}
@@ -49,7 +24,7 @@
                     {% for lot in parking_lots %}
                         <li class="list-group-item">
                             <strong>{{ lot.prime_location_name }}</strong> - {{ lot.address }} ({{ lot.pin_code }})
-                            <span class="badge bg-success">Price: ₹{{ lot.price }}/hr</span>
+                            <span class="badge bg-success">Price: 9{{ lot.price }}/hr</span>
                             <span class="badge bg-info">Spots: {{ lot.maximum_number_of_spots }}</span>
                         </li>
                     {% endfor %}

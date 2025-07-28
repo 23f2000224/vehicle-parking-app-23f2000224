@@ -1,40 +1,54 @@
 {% extends "layout.html" %}
 
-{% block title %}User Dashboard | Vehicle Parking App{% endblock %}
+{% block title %}User Parking Summary | Vehicle Parking App{% endblock %}
 
 {% block header %}
 {% include "user/navbar.html" with context %}
 {% endblock header%}
 
-
 {% block content %}
-    
-    <div class="container mt-4">
-        <h2>Your Parking Summary</h2>
-        
-        <div class="row mt-4">
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Parking Cost History</h5>
-                        <img src="data:image/png;base64,{{ plot_url }}" alt="Parking Cost History" class="img-fluid">
+<div class="container mt-4">
+    <h2>Your Parking Summary</h2>
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <div class="card h-100">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">Parking Cost History</h5>
+                    <div class="flex-grow-1 d-flex align-items-center justify-content-center">
+                        {% if plot_url %}
+                            <img src="data:image/png;base64,{{ plot_url }}" alt="Parking Cost History" class="img-fluid">
+                        {% else %}
+                            <p class="text-muted">No parking history available to generate plot.</p>
+                        {% endif %}
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Statistics</h5>
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item">Total Parkings: {{ stats.total_parkings }}</li>
-                            <li class="list-group-item">Total Spent: {{ stats.total_spent|replace('$', '₹') }}</li>
-                            <li class="list-group-item">Average Cost: {{ stats.avg_cost|replace('$', '₹') }}</li>
-                            <li class="list-group-item">Most Used Lot: {{ stats.most_used_lot }}</li>
-                        </ul>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Statistics</h5>
+                    <div class="d-flex flex-column h-100 justify-content-center">
+                        <div class="mb-3 text-center">
+                            <h3 class="text-info mb-1">{{ stats.total_parkings }}</h3>
+                            <p class="text-muted mb-0">Total Parkings</p>
+                        </div>
+                        <div class="mb-3 text-center">
+                            <h3 class="text-primary mb-1">{{ stats.total_spent }}</h3>
+                            <p class="text-muted mb-0">Total Spent</p>
+                        </div>
+                        <div class="mb-3 text-center">
+                            <h3 class="text-success mb-1">{{ stats.avg_cost }}</h3>
+                            <p class="text-muted mb-0">Average Cost</p>
+                        </div>
+                        <div class="text-center">
+                            <h3 class="text-warning mb-1">{{ stats.most_used_lot }}</h3>
+                            <p class="text-muted mb-0">Most Used Lot</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
+</div>
 {% endblock %}

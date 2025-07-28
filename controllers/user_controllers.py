@@ -27,13 +27,11 @@ def park_vehicle():
     lot_id = form_data['lot_id']
     vehicle_number = form_data['vehicle_number']
     
-    # Find first available spot
     available_spot = ParkingSpot.query.filter_by(lot_id=lot_id, status='A').first()
     if not available_spot:
         flash('No parking spots available in this lot.', 'error')
         return redirect(url_for('user_dashboard'))
     
-    # Create parking ticket
     lot = ParkingLot.query.get(lot_id)
     ticket = Ticket(
         spot_id=available_spot.id,
@@ -44,7 +42,6 @@ def park_vehicle():
         active=True
     )
     
-    # Update spot status
     available_spot.status = 'O'
     
     db.session.add(ticket)
@@ -62,7 +59,7 @@ def release_spot(ticket_id):
         return redirect(url_for('user_dashboard'))
     
     leaving_time = datetime.now()
-    duration = (leaving_time - ticket.parking_timestamp).total_seconds() / 3600  # hours
+    duration = (leaving_time - ticket.parking_timestamp).total_seconds() / 3600
     total_cost = duration * ticket.parking_cost_per_unit_time
 
     ticket.active = False
@@ -72,7 +69,7 @@ def release_spot(ticket_id):
     ticket.spot.status = 'A'
     
     db.session.commit()
-    flash(f'Parking spot released. Total cost: ₹{total_cost:.2f}', 'success')
+    flash(f'Parking spot released. Total cost: 9{total_cost:.2f}', 'success')
     return redirect(url_for('user_dashboard'))
 
 @app.route('/user/history')
@@ -81,7 +78,7 @@ def parking_history():
     tickets = (Ticket.query
               .filter_by(user_id=current_user.id)
               .order_by(Ticket.parking_timestamp.desc())
-              .limit(50)  # Limit to recent 50 tickets for better performance
+              .limit(50)
               .all())
     return render_template('user/history.html', tickets=tickets, user=current_user.username)
 
@@ -89,39 +86,34 @@ def parking_history():
 @user_required
 def user_summary():
     try:
-        # Get user's parking history
         tickets = Ticket.query.filter_by(user_id=current_user.id).order_by(Ticket.parking_timestamp.asc()).all()
         
         if not tickets:
             flash('No parking history available.', 'info')
             return redirect(url_for('user_dashboard'))
 
-        # Create visualization
         plt.figure(figsize=(10, 6))
-        dates = [ticket.parking_timestamp for ticket in tickets]
+        dates = [ticket.parking_timestamp.strftime('%Y-%m-%d') for ticket in tickets]
         costs = [ticket.total_cost if ticket.total_cost else 0 for ticket in tickets]
         
-        plt.plot(dates, costs, marker='o')
-        plt.title('Parking Cost History')
-        plt.xlabel('Date')
-        plt.ylabel('Cost (₹)')
-        plt.xticks(rotation=45)
+        plt.bar(dates, costs, color='#007bff', alpha=0.85)
+        plt.title('Parking Cost History', fontsize=24, fontweight='bold')
+        plt.xlabel('Date', fontsize=21, fontweight='bold')
+        plt.ylabel('Cost (9)', fontsize=21, fontweight='bold')
+        plt.xticks(fontsize=18, rotation=0)
+        plt.yticks(fontsize=18)
         plt.tight_layout()
 
-        # Save plot to memory
         img = io.BytesIO()
         plt.savefig(img, format='png', bbox_inches='tight')
         img.seek(0)
-        plt.close('all')  # Close all figures
+        plt.close('all')
         
-        # Convert plot to base64 string
         plot_url = base64.b64encode(img.getvalue()).decode()
         
-        # Calculate statistics
         total_spent = sum(costs)
         avg_cost = total_spent / len(tickets) if tickets else 0
         
-        # Fix the query with explicit joins
         most_used_lot = (
             db.session.query(
                 ParkingLot.prime_location_name,
@@ -138,8 +130,8 @@ def user_summary():
 
         stats = {
             'total_parkings': len(tickets),
-            'total_spent': f"₹{total_spent:.2f}",
-            'avg_cost': f"₹{avg_cost:.2f}",
+            'total_spent': f"9{total_spent:.2f}",
+            'avg_cost': f"9{avg_cost:.2f}",
             'most_used_lot': most_used_lot[0] if most_used_lot else "N/A"
         }
         
@@ -162,7 +154,6 @@ def book_parking(record_id):
         flash('This parking spot is already booked.', 'error')
         return redirect(url_for('user_dashboard'))
     
-    # Mark the ticket as active
     ticket.active = True
     db.session.commit()
     
@@ -184,9 +175,8 @@ def release_parking(record_id):
         flash('This parking spot is not booked.', 'error')
         return redirect(url_for('user_dashboard'))
 
-    # Release the parking spot
     leaving_time = datetime.now()
-    duration = Decimal(str((leaving_time - ticket.parking_timestamp).total_seconds() / 3600))  # Convert float to Decimal
+    duration = Decimal(str((leaving_time - ticket.parking_timestamp).total_seconds() / 3600))
     total_cost = duration * ticket.parking_cost_per_unit_time
 
     ticket.active = False
@@ -196,7 +186,7 @@ def release_parking(record_id):
     ticket.spot.status = 'A'
     
     db.session.commit()
-    flash(f'Parking spot released. Total cost: ₹{total_cost:.2f}', 'success')
+    flash(f'Parking spot released. Total cost: 9{total_cost:.2f}', 'success')
     return redirect(url_for('user_dashboard'))
 
 @app.route('/user/find', methods=['GET', 'POST'])
@@ -206,24 +196,21 @@ def find_parking():
         search_query = request.form.get('search_query', '')
         search_type = request.form.get('search_type', 'location')
         
-        # Base query for parking lots with available spots
         base_query = (db.session.query(ParkingLot)
                      .join(ParkingSpot)
                      .filter(ParkingSpot.status == 'A')
                      .group_by(ParkingLot.id)
                      .having(db.func.count(ParkingSpot.id) > 0))
         
-        # Apply search filter
         if search_type == 'location':
             parking_lots = base_query.filter(
                 ParkingLot.prime_location_name.ilike(f'%{search_query}%')
             ).all()
-        else:  # pin_code
+        else:
             parking_lots = base_query.filter(
                 ParkingLot.pin_code.ilike(f'%{search_query}%')
             ).all()
         
-        # Get available spots count for each lot
         lots_with_spots = []
         for lot in parking_lots:
             available_spots = ParkingSpot.query.filter_by(

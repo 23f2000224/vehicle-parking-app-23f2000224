@@ -1,0 +1,94 @@
+{% extends "layout.html" %}
+
+{% block title %}Spot Details | Vehicle Parking App{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Spot Details - {{ lot.prime_location_name }}</h2>
+        <a href="{{ url_for('view_parking_spots', lot_id=lot.id) }}" class="btn btn-secondary">Back to Spots</a>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Spot ID: {{ spot.id }}</h4>
+                    <span class="badge bg-danger">Occupied</span>
+                </div>
+                <div class="card-body">
+                    {% if active_ticket %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="card-title">Customer Information</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Customer ID:</strong></td>
+                                    <td>{{ active_ticket.user.id }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Customer Name:</strong></td>
+                                    <td>{{ active_ticket.user.fullname }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Username:</strong></td>
+                                    <td>{{ active_ticket.user.username }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Address:</strong></td>
+                                    <td>{{ active_ticket.user.address }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Pincode:</strong></td>
+                                    <td>{{ active_ticket.user.pincode }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="card-title">Parking Information</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Vehicle Number:</strong></td>
+                                    <td>{{ active_ticket.vehicle_number }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Parking Date & Time:</strong></td>
+                                    <td>{{ active_ticket.parking_timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Cost per Hour:</strong></td>
+                                    <td>₹{{ "%.2f"|format(active_ticket.parking_cost_per_unit_time) }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Ticket ID:</strong></td>
+                                    <td>{{ active_ticket.id }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h5 class="card-title">Cost Calculation</h5>
+                            <div class="alert alert-info">
+                                <strong>Current Parking Duration:</strong> 
+                                {{ "%.2f"|format(duration_hours) }} hours
+                                <br>
+                                <strong>Estimated Current Cost:</strong> 
+                                ₹{{ "%.2f"|format(estimated_cost) }}
+                                <br>
+                                <small class="text-muted">*Cost is calculated based on current time and may change until the ticket is closed.</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        No active ticket found for this spot.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

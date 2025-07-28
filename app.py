@@ -8,11 +8,9 @@ def create_app():
     app.config.from_object(LocalDevelopmentConfig)
     db.init_app(app)
 
-    # Initialize Flask-Login
     login_manager = LoginManager()
     login_manager.init_app(app)
 
-    # User loader callback
     from models.models import User
     @login_manager.user_loader
     def load_user(user_id):

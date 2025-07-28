@@ -28,12 +28,10 @@ def register():
     if request.method == 'POST':
         form_data = request.form.to_dict()
 
-        # Check if the username already exists
         if User.query.filter_by(username=form_data['username']).first():
             flash('Username already exists', 'error')
             return redirect(url_for('register'))
 
-        # Create new user with hashed password
         new_user = User(
             username=form_data['username'],
             password_hash=generate_password_hash(form_data['password']),
@@ -50,7 +48,6 @@ def register():
     return render_template('register.html')
 
 
-# edit profile 
 @app.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
 def edit_profile():

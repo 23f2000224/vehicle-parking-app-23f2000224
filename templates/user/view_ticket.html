@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+
+{% block title %}View Ticket Details | Vehicle Parking App{% endblock %}
+
+{% block header %}
+    {% include "user/navbar.html" with context %}
+{% endblock header %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h4>Ticket Details #{{ ticket.id }}</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Location:</strong> {{ ticket.spot.lot.prime_location_name }}</p>
+                    <p><strong>Vehicle Number:</strong> {{ ticket.vehicle_number }}</p>
+                    <p><strong>Parking Time:</strong> {{ ticket.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
+                    <p><strong>Cost per Hour:</strong> ₹{{ ticket.parking_cost_per_unit_time }}</p>
+                    <p><strong>Status:</strong> 
+                        {% if ticket.leaving_timestamp %}
+                            <span class="badge bg-secondary">Released</span>
+                        {% else %}
+                            <span class="badge bg-success">Active</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Address:</strong> {{ ticket.spot.lot.address }}</p>
+                    <p><strong>PIN Code:</strong> {{ ticket.spot.lot.pin_code }}</p>
+                    <p><strong>Spot Number:</strong> {{ ticket.spot.id }}</p>
+                    {% if ticket.leaving_timestamp %}
+                        <p><strong>Leaving Time:</strong> {{ ticket.leaving_timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
+                        <p><strong>Total Duration:</strong> {{ "%.2f"|format(ticket.duration) }} hours</p>
+                        <p><strong>Total Cost:</strong> ₹{{ "%.2f"|format(ticket.total_cost) }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% if not ticket.leaving_timestamp %}
+                <div class="mt-3">
+                    <form action="{{ url_for('release_parking', record_id=ticket.id) }}" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-danger">Release Parking</button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
