@@ -1,0 +1,456 @@
+openapi: 3.0.0
+info:
+  title: Vehicle Parking Management System API
+  description: API for managing vehicle parking operations including user authentication, parking lot management, and booking operations
+  version: 1.0.0
+  contact:
+    name: [Your Name]
+    email: [Your Email]
+
+servers:
+  - url: http://localhost:5000
+    description: Development server
+
+paths:
+  # Authentication Endpoints
+  /login:
+    post:
+      summary: User login
+      description: Authenticate user and create session
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: User's username
+                password:
+                  type: string
+                  description: User's password
+              required:
+                - username
+                - password
+      responses:
+        '200':
+          description: Login successful
+        '401':
+          description: Invalid credentials
+        '400':
+          description: Bad request
+
+  /register:
+    post:
+      summary: User registration
+      description: Register a new user account
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: Unique username
+                password:
+                  type: string
+                  description: User password
+                fullname:
+                  type: string
+                  description: User's full name
+                address:
+                  type: string
+                  description: User's address
+                pincode:
+                  type: string
+                  description: User's postal code
+              required:
+                - username
+                - password
+                - fullname
+                - address
+                - pincode
+      responses:
+        '200':
+          description: Registration successful
+        '400':
+          description: Validation error or username already exists
+
+  /logout:
+    get:
+      summary: User logout
+      description: End user session
+      responses:
+        '200':
+          description: Logout successful
+
+  # User Dashboard Endpoints
+  /user/dashboard:
+    get:
+      summary: User dashboard
+      description: Display user's dashboard with booking history
+      responses:
+        '200':
+          description: Dashboard displayed successfully
+        '401':
+          description: User not authenticated
+
+  /user/find:
+    get:
+      summary: Find parking spots
+      description: Search for available parking spots
+      parameters:
+        - name: search_query
+          in: query
+          description: Search term for parking lots
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Search results displayed
+        '401':
+          description: User not authenticated
+
+  /user/book/{lot_id}:
+    post:
+      summary: Book parking spot
+      description: Book an available parking spot in a specific lot
+      parameters:
+        - name: lot_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Parking lot ID
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                vehicle_number:
+                  type: string
+                  description: Vehicle registration number
+              required:
+                - vehicle_number
+      responses:
+        '200':
+          description: Booking successful
+        '400':
+          description: No available spots or validation error
+        '401':
+          description: User not authenticated
+
+  /user/release/{ticket_id}:
+    post:
+      summary: Release parking spot
+      description: Release a booked parking spot and calculate billing
+      parameters:
+        - name: ticket_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Ticket ID to release
+      responses:
+        '200':
+          description: Spot released successfully with billing information
+        '400':
+          description: Invalid ticket or already released
+        '401':
+          description: User not authenticated
+
+  # Admin Endpoints
+  /admin/dashboard:
+    get:
+      summary: Admin dashboard
+      description: Display admin dashboard with parking lot overview
+      responses:
+        '200':
+          description: Admin dashboard displayed
+        '401':
+          description: User not authenticated
+        '403':
+          description: User not authorized as admin
+
+  /admin/summary:
+    get:
+      summary: Admin analytics
+      description: Display revenue and occupancy analytics with charts
+      responses:
+        '200':
+          description: Analytics displayed with visualizations
+        '401':
+          description: User not authenticated
+        '403':
+          description: User not authorized as admin
+
+  /admin/add_parking_lot:
+    post:
+      summary: Create parking lot
+      description: Create a new parking lot with specified details
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                prime_location_name:
+                  type: string
+                  description: Unique location name
+                price:
+                  type: number
+                  format: float
+                  description: Price per hour
+                address:
+                  type: string
+                  description: Physical address
+                pin_code:
+                  type: string
+                  description: Postal code
+                maximum_number_of_spots:
+                  type: integer
+                  description: Total number of parking spots
+              required:
+                - prime_location_name
+                - price
+                - address
+                - pin_code
+                - maximum_number_of_spots
+      responses:
+        '200':
+          description: Parking lot created successfully
+        '400':
+          description: Validation error or duplicate location name
+        '401':
+          description: User not authenticated
+        '403':
+          description: User not authorized as admin
+
+  /admin/edit_parking_lot/{lot_id}:
+    post:
+      summary: Edit parking lot
+      description: Update existing parking lot details
+      parameters:
+        - name: lot_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Parking lot ID to edit
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                prime_location_name:
+                  type: string
+                  description: Updated location name
+                price:
+                  type: number
+                  format: float
+                  description: Updated price per hour
+                address:
+                  type: string
+                  description: Updated address
+                pin_code:
+                  type: string
+                  description: Updated postal code
+                maximum_number_of_spots:
+                  type: integer
+                  description: Updated maximum spots
+              required:
+                - prime_location_name
+                - price
+                - address
+                - pin_code
+                - maximum_number_of_spots
+      responses:
+        '200':
+          description: Parking lot updated successfully
+        '400':
+          description: Validation error or duplicate location name
+        '401':
+          description: User not authenticated
+        '403':
+          description: User not authorized as admin
+        '404':
+          description: Parking lot not found
+
+  /admin/delete_parking_lot/{lot_id}:
+    post:
+      summary: Delete parking lot
+      description: Delete a parking lot (only if no active tickets)
+      parameters:
+        - name: lot_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Parking lot ID to delete
+      responses:
+        '200':
+          description: Parking lot deleted successfully
+        '400':
+          description: Cannot delete lot with active tickets
+        '401':
+          description: User not authenticated
+        '403':
+          description: User not authorized as admin
+        '404':
+          description: Parking lot not found
+
+  /admin/search:
+    post:
+      summary: Admin search
+      description: Search for users or parking lots
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                search_type:
+                  type: string
+                  enum: [user, parking_lot]
+                  description: Type of search to perform
+                search_query:
+                  type: string
+                  description: Search term
+              required:
+                - search_type
+                - search_query
+      responses:
+        '200':
+          description: Search results displayed
+        '401':
+          description: User not authenticated
+        '403':
+          description: User not authorized as admin
+
+  /admin/users:
+    get:
+      summary: View all users
+      description: Display list of all registered users
+      responses:
+        '200':
+          description: Users list displayed
+        '401':
+          description: User not authenticated
+        '403':
+          description: User not authorized as admin
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: User ID
+        username:
+          type: string
+          description: Unique username
+        fullname:
+          type: string
+          description: User's full name
+        address:
+          type: string
+          description: User's address
+        pincode:
+          type: string
+          description: User's postal code
+        is_admin:
+          type: boolean
+          description: Admin privileges flag
+
+    ParkingLot:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Parking lot ID
+        prime_location_name:
+          type: string
+          description: Unique location name
+        price:
+          type: number
+          format: float
+          description: Price per hour
+        address:
+          type: string
+          description: Physical address
+        pin_code:
+          type: string
+          description: Postal code
+        maximum_number_of_spots:
+          type: integer
+          description: Total parking spots
+
+    ParkingSpot:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Spot ID
+        lot_id:
+          type: integer
+          description: Associated parking lot ID
+        status:
+          type: string
+          enum: [A, O]
+          description: A=Available, O=Occupied
+
+    Ticket:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Ticket ID
+        active:
+          type: boolean
+          description: Whether ticket is active
+        spot_id:
+          type: integer
+          description: Associated parking spot ID
+        user_id:
+          type: integer
+          description: Associated user ID
+        vehicle_number:
+          type: string
+          description: Vehicle registration number
+        parking_timestamp:
+          type: string
+          format: date-time
+          description: Entry time
+        leaving_timestamp:
+          type: string
+          format: date-time
+          description: Exit time
+        duration:
+          type: number
+          format: float
+          description: Duration in hours
+        total_cost:
+          type: number
+          format: float
+          description: Total parking fee
+        parking_cost_per_unit_time:
+          type: number
+          format: float
+          description: Rate per hour
+
+  securitySchemes:
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: session
+      description: Session-based authentication using Flask-Login 
