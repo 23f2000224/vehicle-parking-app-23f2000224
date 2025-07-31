@@ -20,15 +20,17 @@
         <div class="mt-4">
             <h3 class="mb-4">Search Results for "{{ search_query }}"</h3>
                 <h4>Parking Lots</h4>
-                <ul class="list-group mb-4">
-                    {% for lot in parking_lots %}
-                        <li class="list-group-item">
-                            <strong>{{ lot.prime_location_name }}</strong> - {{ lot.address }} ({{ lot.pin_code }})
-                            <span class="badge bg-success">Price: 9{{ lot.price }}/hr</span>
-                            <span class="badge bg-info">Spots: {{ lot.maximum_number_of_spots }}</span>
-                        </li>
-                    {% endfor %}
-                </ul>
+                <div style="max-height: 400px; overflow-y: auto;">
+                    <ul class="list-group mb-4">
+                        {% for lot in parking_lots %}
+                            <li class="list-group-item">
+                                <strong>{{ lot.prime_location_name }}</strong> - {{ lot.address }} ({{ lot.pin_code }})
+                                <span class="badge bg-success">Price: 9{{ lot.price }}/hr</span>
+                                <span class="badge bg-info">Spots: {{ lot.maximum_number_of_spots }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
         </div>
     {% endif %}
 </div>

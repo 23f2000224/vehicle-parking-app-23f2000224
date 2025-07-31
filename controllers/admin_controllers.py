@@ -312,6 +312,9 @@ def view_spot_details(lot_id, spot_id):
     from datetime import datetime
     current_time = datetime.now()
     duration_hours = (current_time - active_ticket.parking_timestamp).total_seconds() / 3600
+    # Ensure minimum charge for 1 hour
+    if duration_hours < 1:
+        duration_hours = 1.0
     estimated_cost = duration_hours * float(active_ticket.parking_cost_per_unit_time)
     
     return render_template('admin/parking/spot_details.html', 

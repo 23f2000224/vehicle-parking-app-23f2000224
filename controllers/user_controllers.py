@@ -50,28 +50,6 @@ def park_vehicle():
     flash('Vehicle parked successfully!', 'success')
     return redirect(url_for('user_dashboard'))
 
-@app.route('/user/release/<int:ticket_id>', methods=['POST'])
-@user_required
-def release_spot(ticket_id):
-    ticket = Ticket.query.get_or_404(ticket_id)
-    if ticket.user_id != current_user.id:
-        flash('Unauthorized action', 'error')
-        return redirect(url_for('user_dashboard'))
-    
-    leaving_time = datetime.now()
-    duration = (leaving_time - ticket.parking_timestamp).total_seconds() / 3600
-    total_cost = duration * ticket.parking_cost_per_unit_time
-
-    ticket.active = False
-    ticket.leaving_timestamp = leaving_time
-    ticket.total_cost = total_cost
-    ticket.duration = duration
-    ticket.spot.status = 'A'
-    
-    db.session.commit()
-    flash(f'Parking spot released. Total cost: 9{total_cost:.2f}', 'success')
-    return redirect(url_for('user_dashboard'))
-
 @app.route('/user/history')
 @user_required
 def parking_history():
@@ -99,7 +77,7 @@ def user_summary():
         plt.bar(dates, costs, color='#007bff', alpha=0.85)
         plt.title('Parking Cost History', fontsize=24, fontweight='bold')
         plt.xlabel('Date', fontsize=21, fontweight='bold')
-        plt.ylabel('Cost (9)', fontsize=21, fontweight='bold')
+        plt.ylabel('Cost (₹)', fontsize=21, fontweight='bold')
         plt.xticks(fontsize=18, rotation=0)
         plt.yticks(fontsize=18)
         plt.tight_layout()
@@ -160,7 +138,7 @@ def book_parking(record_id):
     flash('Parking spot booked successfully!', 'success')
     return redirect(url_for('user_dashboard'))
 
-@app.route('/user/release_parking/<int:record_id>', methods=['GET', 'POST'])
+@app.route('/user/release_parking/<int:record_id>', methods=['POST'])
 @user_required
 def release_parking(record_id):
     ticket = Ticket.query.get_or_404(record_id)
@@ -168,15 +146,15 @@ def release_parking(record_id):
         flash('Unauthorized action', 'error')
         return redirect(url_for('user_dashboard'))
 
-    if request.method == 'GET':
-        return render_template('user/parking/release.html', ticket=ticket, user=current_user.username)
-
     if not ticket.active:
         flash('This parking spot is not booked.', 'error')
         return redirect(url_for('user_dashboard'))
 
     leaving_time = datetime.now()
     duration = Decimal(str((leaving_time - ticket.parking_timestamp).total_seconds() / 3600))
+    # Ensure minimum charge for 1 hour
+    if duration < 1:
+        duration = Decimal('1.0')
     total_cost = duration * ticket.parking_cost_per_unit_time
 
     ticket.active = False
@@ -186,7 +164,7 @@ def release_parking(record_id):
     ticket.spot.status = 'A'
     
     db.session.commit()
-    flash(f'Parking spot released. Total cost: 9{total_cost:.2f}', 'success')
+    flash(f'Parking spot released. Total cost: ₹{total_cost:.2f}', 'success')
     return redirect(url_for('user_dashboard'))
 
 @app.route('/user/find', methods=['GET', 'POST'])
