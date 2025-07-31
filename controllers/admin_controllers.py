@@ -3,6 +3,7 @@ from .controller_common import *
 import matplotlib.pyplot as plt
 import io
 import base64
+from sqlalchemy.exc import IntegrityError
 
 def admin_required(f):
     @wraps(f)
@@ -187,6 +188,12 @@ def add_parking_lot():
                 flash('Maximum number of spots must be greater than 0.', 'error')
                 return render_template('admin/parking/create_lot.html')
 
+            # Check if location name already exists
+            existing_lot = ParkingLot.query.filter_by(prime_location_name=prime_location_name).first()
+            if existing_lot:
+                flash(f'A parking lot with the name "{prime_location_name}" already exists. Please choose a different name.', 'error')
+                return render_template('admin/parking/create_lot.html')
+
             new_lot = ParkingLot(
                 prime_location_name=prime_location_name,
                 price=price,
@@ -203,6 +210,13 @@ def add_parking_lot():
             return redirect(url_for('admin_dashboard'))
         except ValueError:
             flash('Invalid input for price or maximum number of spots. Please enter valid numbers.', 'error')
+            return render_template('admin/parking/create_lot.html')
+        except IntegrityError as e:
+            db.session.rollback()
+            if "unique_location_name" in str(e) or "prime_location_name" in str(e):
+                flash(f'A parking lot with the name "{prime_location_name}" already exists. Please choose a different name.', 'error')
+            else:
+                flash(f'Database error: {str(e)}', 'error')
             return render_template('admin/parking/create_lot.html')
         except Exception as e:
             db.session.rollback()
@@ -236,13 +250,20 @@ def edit_parking_lot(lot_id):
                 flash('Maximum number of spots must be greater than 0.', 'error')
                 return render_template('admin/parking/edit_lot.html', lot=lot)
 
+            # Check if the new location name already exists (excluding current lot)
+            new_location_name = form_data['prime_location_name']
+            existing_lot = ParkingLot.query.filter_by(prime_location_name=new_location_name).first()
+            if existing_lot and existing_lot.id != lot.id:
+                flash(f'A parking lot with the name "{new_location_name}" already exists. Please choose a different name.', 'error')
+                return render_template('admin/parking/edit_lot.html', lot=lot)
+
             if new_max_spots < lot.maximum_number_of_spots:
                 success, message = lot.safely_reduce_spots(new_max_spots)
                 if not success:
                     flash(message, 'error')
                     return render_template('admin/parking/edit_lot.html', lot=lot)
 
-            lot.prime_location_name = form_data['prime_location_name']
+            lot.prime_location_name = new_location_name
             lot.price = new_price
             lot.address = form_data['address']
             lot.pin_code = form_data['pin_code']
@@ -260,6 +281,13 @@ def edit_parking_lot(lot_id):
 
         except ValueError:
             flash('Invalid input for price or maximum number of spots. Please enter valid numbers.', 'error')
+            return render_template('admin/parking/edit_lot.html', lot=lot)
+        except IntegrityError as e:
+            db.session.rollback()
+            if "unique_location_name" in str(e) or "prime_location_name" in str(e):
+                flash(f'A parking lot with the name "{new_location_name}" already exists. Please choose a different name.', 'error')
+            else:
+                flash(f'Database error: {str(e)}', 'error')
             return render_template('admin/parking/edit_lot.html', lot=lot)
         except Exception as e:
             db.session.rollback()

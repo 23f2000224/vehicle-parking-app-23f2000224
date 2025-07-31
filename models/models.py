@@ -6,7 +6,7 @@ db = SQLAlchemy()
 
 class ParkingLot(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    prime_location_name = db.Column(db.String(255), nullable=False)
+    prime_location_name = db.Column(db.String(255), nullable=False, unique=True)
     price = db.Column(db.Numeric(10, 2), nullable=False)
     address = db.Column(db.Text, nullable=False)
     pin_code = db.Column(db.String(10), nullable=False)
